@@ -6,10 +6,10 @@ services:
     ports:
     - 25565:25565
     environment:
-      eula: 'TRUE'
-      type: VANILLA
-      version: LATEST
-      memory: 1G
-      log_timestamp: 'true'
+      EULA: 'TRUE'
+      TYPE: VANILLA
+      VERSION: LATEST
+      MEMORY: 1G
+      LOG_TIMESTAMP: 'true'
     volumes:
     - ./data:/data

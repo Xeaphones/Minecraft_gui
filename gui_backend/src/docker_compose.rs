@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_yaml::{from_reader, to_writer, Value};
 use std::fs::File;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DockerCompose {
@@ -90,5 +91,20 @@ impl DockerCompose {
         let file = File::create(&self.path)?;
         to_writer(file, &self.content)?;
         Ok(())
+    }
+
+    // Method to start the docker
+    pub fn start(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let status = Command::new("docker")
+            .arg("compose")
+            .arg("up")
+            .arg("-d")
+            .status()?;
+        
+        if status.success() {
+            Ok(())
+        } else {
+            Err("Failed to start docker-compose services".into())
+        }
     }
 }

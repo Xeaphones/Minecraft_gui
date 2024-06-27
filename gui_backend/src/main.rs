@@ -40,6 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Saving changes back to the file
     docker_compose.save()?;
+    docker_compose.start()?;
 
     let bind_addr = "127.0.0.1:8080";
     let server = start_server(&bind_addr);
