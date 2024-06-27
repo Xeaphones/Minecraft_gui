@@ -1,0 +1,15 @@
+services:
+  mc:
+    image: itzg/minecraft-server
+    tty: true
+    stdin_open: true
+    volumes:
+    - ./data:/data
+    environment:
+      eula: 'TRUE'
+      type: VANILLA
+      version: LATEST
+      memory: 1G
+      log_timestamp: 'true'
+    ports:
+    - 25565:25565
