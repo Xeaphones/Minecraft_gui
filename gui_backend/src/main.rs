@@ -1,9 +1,13 @@
 mod docker_compose;
+mod server;
 
-use docker_compose::DockerCompose;
 use serde_json;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+use docker_compose::DockerCompose;
+use server::start_server;
+
+#[actix_web::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let path = "docker-compose.yml";
     let mut docker_compose = DockerCompose::new(path)?;
 
@@ -36,6 +40,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Saving changes back to the file
     docker_compose.save()?;
+
+    let bind_addr = "127.0.0.1:8080";
+    let server = start_server(&bind_addr);
+
+    println!();
+
+    match server.await {
+        Ok(_) => println!("Server terminated cleanly"),
+        Err(err) => println!("Server terminated with an error!.\nErr: {:?}", err),
+    }
 
     Ok(())
 }
