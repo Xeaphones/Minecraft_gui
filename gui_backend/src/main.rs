@@ -104,6 +104,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Disconnect cleanly when finished.
     client.close().unwrap();
+    docker_compose.stop();
 
     Ok(())
 }

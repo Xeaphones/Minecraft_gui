@@ -158,4 +158,17 @@ impl DockerCompose {
             Err("Failed to start docker-compose services".into())
         }
     }
+
+    pub fn stop(&self) -> Result<(), Box<dyn Error>> {
+        let status = Command::new("docker")
+            .arg("compose")
+            .arg("down")
+            .status()?;
+        
+        if status.success() {
+            Ok(())
+        } else {
+            Err("Failed to stop docker-compose services".into())
+        }
+    }
 }

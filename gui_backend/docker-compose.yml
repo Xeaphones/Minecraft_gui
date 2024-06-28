@@ -6,7 +6,7 @@ services:
       MEMORY: 1G
       TYPE: VANILLA
       VERSION: LATEST
-      RCON_PASSWORD: wWLEdXvZCnowtauO
+      RCON_PASSWORD: geH#KVxzE#xFTtRD
     image: itzg/minecraft-server
     stdin_open: true
     tty: true
