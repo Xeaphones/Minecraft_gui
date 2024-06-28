@@ -1,4 +1,8 @@
+mod rcon;
+
 use actix_web::{web, HttpResponse, Responder};
+
+use rcon::rcon;
 
 async fn hello() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
@@ -18,5 +22,6 @@ pub fn route(cfg: &mut web::ServiceConfig) {
             .route(web::get().to(hello))
             .route(web::post().to(echo))
     )
-    .service(web::resource("/hey").route(web::get().to(manual_hello)));
+    .service(web::resource("/hey").route(web::get().to(manual_hello)))
+    .configure(rcon);
 }
