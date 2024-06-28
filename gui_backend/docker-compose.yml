@@ -1,15 +1,17 @@
 services:
   mc:
-    image: itzg/minecraft-server
-    tty: true
-    stdin_open: true
-    volumes:
-    - ./data:/data
     environment:
-      EULA: 'TRUE'
+      EULA: 'true'
+      LOG_TIMESTAMP: 'true'
+      MEMORY: 1G
       TYPE: VANILLA
       VERSION: LATEST
-      MEMORY: 1G
-      LOG_TIMESTAMP: 'true'
+      RCON_PASSWORD: wWLEdXvZCnowtauO
+    image: itzg/minecraft-server
+    stdin_open: true
+    tty: true
+    volumes:
+    - ./data:/data
     ports:
     - 25565:25565
+    - 25575:25575
