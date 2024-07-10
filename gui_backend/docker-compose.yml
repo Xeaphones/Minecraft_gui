@@ -1,0 +1,17 @@
+services:
+  mc:
+    environment:
+      EULA: 'true'
+      LOG_TIMESTAMP: 'true'
+      MEMORY: 1G
+      TYPE: VANILLA
+      VERSION: LATEST
+      RCON_PASSWORD: HAkIT@q#yzWWUGPk
+    image: itzg/minecraft-server
+    stdin_open: true
+    tty: true
+    volumes:
+    - ./data:/data
+    ports:
+    - 25565:25565
+    - 25575:25575
