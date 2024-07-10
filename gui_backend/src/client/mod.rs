@@ -1,3 +1,4 @@
+use mc_query::query::{stat_basic, stat_full, BasicStatResponse, FullStatResponse};
 use rcon::RconClient;
 use lazy_static::lazy_static;
 use std::sync::Mutex;
@@ -28,6 +29,18 @@ impl Client {
 
     pub fn get_rcon_password(&self) -> String {
         self.rcon_password.clone()
+    }
+
+    // Fonction pour obtenir les statistiques de base
+    pub async fn get_basic_stats(&self) -> Result<BasicStatResponse, Box<dyn Error>> {
+        let stats = stat_basic(&self.address, 25565).await?;
+        Ok(stats)
+    }
+    
+    // Fonction pour obtenir les statistiques complètes
+    pub async fn get_full_stats(&self) -> Result<FullStatResponse, Box<dyn Error>> {
+        let stats = stat_full(&self.address, 25565).await?;
+        Ok(stats)
     }
 }
 
