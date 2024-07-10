@@ -9,6 +9,7 @@ use std::error::Error;
 pub struct DockerCompose {
     content: serde_yaml::Value,
     path: PathBuf,
+    use_docker_compose: bool,
 }
 
 impl DockerCompose {
@@ -20,6 +21,7 @@ impl DockerCompose {
         Ok(DockerCompose {
             content: docker_compose,
             path: path.as_ref().to_path_buf(),
+            use_docker_compose: false,
         })
     }
 
@@ -144,13 +146,35 @@ impl DockerCompose {
         Ok(())
     }
 
-    // Method to start the docker
-    pub fn start(&self) -> Result<(), Box<dyn Error>> {
+    fn check_docker_compose(&mut self) {
         let status = Command::new("docker")
             .arg("compose")
-            .arg("up")
-            .arg("-d")
-            .status()?;
+            .arg("version")
+            .status();
+        
+        if let Ok(status) = status {
+            if status.success() {
+                self.use_docker_compose = true;
+            }
+        }
+    }
+
+    // Method to start the docker
+    pub fn start(&mut self) -> Result<(), Box<dyn Error>> {
+        self.check_docker_compose();
+
+        let status = if self.use_docker_compose {
+            Command::new("docker")
+                .arg("compose")
+                .arg("up")
+                .arg("-d")
+                .status()?
+        } else {
+            Command::new("docker-compose")
+                .arg("up")
+                .arg("-d")
+                .status()?
+        };
         
         if status.success() {
             Ok(())
@@ -160,10 +184,16 @@ impl DockerCompose {
     }
 
     pub fn stop(&self) -> Result<(), Box<dyn Error>> {
-        let status = Command::new("docker")
-            .arg("compose")
-            .arg("down")
-            .status()?;
+        let status = if self.use_docker_compose {
+            Command::new("docker")
+                .arg("compose")
+                .arg("down")
+                .status()?
+        } else {
+            Command::new("docker-compose")
+                .arg("down")
+                .status()?
+        };
         
         if status.success() {
             Ok(())
