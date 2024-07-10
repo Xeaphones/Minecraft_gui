@@ -33,21 +33,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         docker_compose.set_env("mc", "RCON_PASSWORD", &client.get_rcon_password())?;
     }
 
-    // Getting basic stats
-    {
-        let client = CLIENT.lock().unwrap();
-        match client.get_basic_stats().await {
-            Ok(stats) => println!("Basic Stats: {:?}", stats),
-            Err(err) => println!("Error getting basic stats: {:?}", err),
-        }
-
-        // Getting full stats
-        match client.get_full_stats().await {
-            Ok(stats) => println!("Full Stats: {:?}", stats),
-            Err(err) => println!("Error getting full stats: {:?}", err),
-        }
-    }
-
     // Getting a value from the nginx service
     // if let Some(value) = docker_compose.get_value("mc", "environment") {
     //     println!("Env: {:#?}", value);
@@ -67,6 +52,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let bind_addr = "127.0.0.1:8080";
     let server = start_server(&bind_addr);
+
+    // Getting basic stats
+    {
+        let client = CLIENT.lock().unwrap();
+        match client.get_basic_stats().await {
+            Ok(stats) => println!("Basic Stats: {:?}", stats),
+            Err(err) => println!("Error getting basic stats: {:?}", err),
+        }
+    
+    // Getting full stats
+        match client.get_full_stats().await {
+            Ok(stats) => println!("Full Stats: {:?}", stats),
+            Err(err) => println!("Error getting full stats: {:?}", err),
+        }
+    }
 
     println!();
     match server.await {
