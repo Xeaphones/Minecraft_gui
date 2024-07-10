@@ -1,29 +1,26 @@
-use lazy_static::lazy_static;
-use std::sync::Mutex;
-use minecraft_client_rs::{Client, Message};
+use mc_query::rcon::RconClient as Rcon;
 use rand::Rng;
 use std::time::Duration;
 use std::thread;
 use std::error::Error;
 use std::fmt;
+use tokio::io;
 
 pub struct RconClient {
-    client: Option<Client>,
+    client: Rcon,
     password: String,
+    address: String,
     logged_in: bool,
 }
 
 impl RconClient {
-    fn new() -> Self {
-        RconClient {
-            client: None,
-            password: RconClient::generate_password(16),
+    pub async fn new(address: &String, _password: &String) -> io::Result<Self> {
+        Ok(RconClient {
+            client: Rcon::new(&address, 25575).await?,
+            password: _password.clone(),
+            address: address.clone(),
             logged_in: false,
-        }
-    }
-
-    pub fn get_password(&self) -> String {
-        self.password.clone()
+        })
     }
 
     pub fn is_logged_in(&self) -> bool {
@@ -44,13 +41,13 @@ impl RconClient {
         random_string
     }
 
-    pub fn authenticate(&mut self, address: String) -> Result<(), Box<dyn Error>> {
+    pub async fn authenticate(&mut self) -> Result<(), Box<dyn Error>> {
         if self.is_logged_in() {
             Err(AlreadyLoggedInError)?
         }
         loop {
-            self.client = Some(Client::new(address.clone()).unwrap());
-            match self.client.as_mut().unwrap().authenticate(self.password.clone()) {
+            self.client = Rcon::new(&self.address, 25575).await?;
+            match self.client.authenticate(&self.password).await {
                 Ok(_) => { 
                     println!("Rcon Authenticated");
                     self.logged_in = true;
@@ -63,25 +60,25 @@ impl RconClient {
         Ok(())
     }
 
-    pub fn close(&mut self) -> Result<(), Box<dyn Error>> {
-        self.client.as_mut().unwrap().close()?;
+    pub async fn close(self) -> Result<(), Box<dyn Error>> {
+        self.client.disconnect().await?;
         Ok(())
     }
 
-    pub fn send_command(&mut self, command: String) -> Result<Message, Box<dyn Error>> {
+    pub async fn send_command(&mut self, command: String) -> Result<String, Box<dyn Error>> {
         if !self.is_logged_in() {
             Err(Box::new(NotLoggedInError))?
         }
-        match self.client.as_mut().unwrap().send_command(command.to_string()) {
+        match self.client.run_command(&command.to_string()).await {
             Ok(resp) => { Ok(resp) },
-            Err(err) => { Err(err) },
+            Err(err) => { Err(Box::new(err))? },
         }
     } 
 }
 
-lazy_static! {
-    pub static ref RCON_CLIENT: Mutex<RconClient> = Mutex::new(RconClient::new());
-}
+// lazy_static! {
+//     pub static ref RCON_CLIENT: Mutex<RconClient> = Mutex::new(RconClient::new(&String::from("localhost")).unwrap());
+// }
 
 #[derive(Debug)]
 struct NotLoggedInError;

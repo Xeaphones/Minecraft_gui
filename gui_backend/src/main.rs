@@ -1,12 +1,11 @@
 mod docker_compose;
 mod server;
-mod rcon_client;
+mod client;
 
 use serde_json;
-
 use docker_compose::DockerCompose;
 use server::start_server;
-use rcon_client::{RCON_CLIENT};
+use client::CLIENT;
 
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -30,8 +29,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     docker_compose.set_service("mc", mc_service);
     docker_compose.set_value("mc", "ports", serde_json::json!(["25565:25565","25575:25575"]))?;
     {
-        let client = RCON_CLIENT.lock().unwrap();
-        docker_compose.set_env("mc", "RCON_PASSWORD", &client.get_password())?;
+        let client = CLIENT.lock().unwrap();
+        docker_compose.set_env("mc", "RCON_PASSWORD", &client.get_rcon_password())?;
     }
 
     // Getting a value from the nginx service
@@ -62,8 +61,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Disconnect cleanly when finished.   
     {
-        let mut client = RCON_CLIENT.lock().unwrap();
-        client.close().unwrap();
+        let mut client = CLIENT.lock().unwrap();
+    
+        if let Some(rcon_client) = client.rcon_client.take() {
+            rcon_client.close().await?;
+        }
     }
     docker_compose.stop()?;
 

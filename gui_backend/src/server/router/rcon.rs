@@ -1,7 +1,7 @@
 use actix_web::{web, App, HttpServer, Result};
 use serde::Deserialize;
 use std::error::Error;
-use crate::rcon_client::RCON_CLIENT;
+use crate::client::CLIENT;
 
 #[derive(Deserialize)]
 struct Info {
@@ -9,15 +9,21 @@ struct Info {
 }
 
 async fn command(info: web::Json<Info>) -> Result<String, Box<dyn Error>> {
-    let mut client = RCON_CLIENT.lock().unwrap();
+    let mut client = CLIENT.lock().unwrap();
 
-    if !client.is_logged_in() {
-        let _ = client.authenticate("127.0.0.1:25575".to_string());
+    // if no rconclient
+    if client.rcon_client.is_none() {
+        client.attach_rcon().await?;
     }
 
-    match client.send_command(info.command.to_string()) {
-        Ok(resp) => { Ok(format!("{}", resp.body)) },
-        Err(err) => { Err(err) },
+    let rcon_client = client.rcon_client.as_mut().unwrap();
+    if !rcon_client.is_logged_in() {
+        let _ = rcon_client.authenticate().await?;
+    }
+
+    match rcon_client.send_command(info.command.to_string()).await {
+        Ok(resp) => { return Ok(format!("{}", resp)) },
+        Err(err) => { return Err(err) },
     }
 }
 
