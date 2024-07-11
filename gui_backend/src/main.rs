@@ -24,6 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "VERSION": "LATEST",
             "MEMORY": "1G",
             "LOG_TIMESTAMP": "true", 
+            "ENABLE_QUERY": "true",
         })
     });
     docker_compose.set_service("mc", mc_service);
@@ -50,28 +51,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     docker_compose.save()?;
     docker_compose.start()?;
 
+    {
+        let mut client = CLIENT.lock().unwrap();
+        client.set_container_address(docker_compose.get_container_ip("mc".to_string())?);
+    }
+
     let bind_addr = "127.0.0.1:8080";
     let server = start_server(&bind_addr);
-
-    // Getting basic stats
-    {
-        let client = CLIENT.lock().unwrap();
-        match client.get_basic_stats().await {
-            Ok(stats) => println!("Basic Stats: {:?}", stats),
-            Err(err) => println!("Error getting basic stats: {:?}", err),
-        }
-    
-    // Getting full stats
-        match client.get_full_stats().await {
-            Ok(stats) => println!("Full Stats: {:?}", stats),
-            Err(err) => println!("Error getting full stats: {:?}", err),
-        }
-    }
 
     println!();
     match server.await {
         Ok(_) => println!("Server terminated cleanly"),
         Err(err) => println!("Server terminated with an error!.\nErr: {:?}", err),
+    }
+
+    // Getting basic stats
+    {
+        let client = CLIENT.lock().unwrap();
+
+        client.get_stats("full".to_string()).await?;
+        client.get_stats("basic".to_string()).await?;
     }
 
     // Disconnect cleanly when finished.   

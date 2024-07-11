@@ -139,6 +139,43 @@ impl DockerCompose {
             }
         }
 
+    // Method to get the container ip address
+    pub fn get_container_ip(&self, service: String) -> Result<String, Box<dyn Error>> {
+        let command_output = if self.use_docker_compose {
+            Command::new("docker")
+                .arg("compose")
+                .arg("ps")
+                .arg("-q")
+                .arg(service)
+                .output()?
+        } else {
+            Command::new("docker-compose")
+                .arg("ps")
+                .arg("-q")
+                .arg(service)
+                .output()?
+        };
+        let container_id = std::str::from_utf8(&command_output.stdout)?.trim();
+
+        if container_id.is_empty() {
+            return Err("Failed to find container ID".into());
+        }
+
+        let inspect_output = Command::new("docker")
+        .arg("inspect")
+        .arg("--format")
+        .arg("{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}")
+        .arg(container_id)
+        .output()?;
+
+        let container_ip = std::str::from_utf8(&inspect_output.stdout)?.trim();
+
+        if container_ip.is_empty() {
+            return Err("Failed to find container IP address".into());
+        }
+        Ok(container_ip.to_string())
+    }
+
     // Method to save the current Docker Compose configuration back to a file
     pub fn save(&self) -> Result<(), Box<dyn Error>> {
         let file = File::create(&self.path)?;

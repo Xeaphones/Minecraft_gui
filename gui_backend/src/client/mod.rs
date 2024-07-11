@@ -3,6 +3,7 @@ use rcon::RconClient;
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::error::Error;
+use tokio::time::{timeout, Duration};
 
 pub(crate) mod rcon;
 
@@ -10,6 +11,13 @@ pub struct Client {
     pub address: String,
     pub rcon_client: Option<RconClient>,
     rcon_password: String,
+    container_ip: String,
+}
+
+
+pub enum StatResponse {
+    Basic(BasicStatResponse),
+    Full(FullStatResponse),
 }
 
 impl Client {
@@ -18,6 +26,7 @@ impl Client {
             address: address.clone(),
             rcon_client: None,
             rcon_password: RconClient::generate_password(16),
+            container_ip: "empty".to_string(),
         }
     }
 
@@ -31,16 +40,39 @@ impl Client {
         self.rcon_password.clone()
     }
 
+    pub fn set_container_address(&mut self, address: String) {
+        self.container_ip = address;
+    }
+
+    pub async fn get_stats(&self, stat: String) -> Result<StatResponse, Box<dyn Error>> {
+        match stat.as_str() {
+            "full" => self.get_full_stats().await.map(|stats| StatResponse::Full(stats)),
+            _ => self.get_basic_stats().await.map(|stats| StatResponse::Basic(stats)),
+        }
+    }
+
     // Fonction pour obtenir les statistiques de base
-    pub async fn get_basic_stats(&self) -> Result<BasicStatResponse, Box<dyn Error>> {
-        let stats = stat_basic(&self.address, 25565).await?;
-        Ok(stats)
+    async fn get_basic_stats(&self) -> Result<BasicStatResponse, Box<dyn Error>> {
+        let result = timeout(Duration::from_secs(10), stat_basic(&self.container_ip, 25565)).await?;
+
+        match result {
+            Ok(stats) => {
+                Ok(stats)
+            },
+            Err(_) => Err(Box::new(std::io::Error::new(std::io::ErrorKind::TimedOut, "Operation timed out"))),
+        }
     }
     
     // Fonction pour obtenir les statistiques complètes
-    pub async fn get_full_stats(&self) -> Result<FullStatResponse, Box<dyn Error>> {
-        let stats = stat_full(&self.address, 25565).await?;
-        Ok(stats)
+    async fn get_full_stats(&self) -> Result<FullStatResponse, Box<dyn Error>> {
+        let result = timeout(Duration::from_secs(10), stat_full(&self.container_ip, 25565)).await?;
+
+        match result {
+            Ok(stats) => {
+                Ok(stats)
+            },
+            Err(_) => Err(Box::new(std::io::Error::new(std::io::ErrorKind::TimedOut, "Operation timed out"))),
+        }
     }
 }
 
