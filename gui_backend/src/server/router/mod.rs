@@ -43,7 +43,11 @@ pub fn route(cfg: &mut web::ServiceConfig) {
         web::resource("/")
             .route(web::get().to(hello))
             .route(web::post().to(echo))
+            .route(web::post().to(get_cpu_usage))
     )
+    .service(web::resource("/cpu").route(web::get().to(get_cpu_usage)))
+    .service(web::resource("/ram").route(web::get().to(get_ram_usage)))
+    .service(web::resource("/status").route(web::get().to(get_server_status)))
     .service(web::resource("/hey").route(web::get().to(manual_hello)))
     .configure(rcon);
 }
