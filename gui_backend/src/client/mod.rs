@@ -6,6 +6,7 @@ use std::error::Error;
 use tokio::time::{timeout, Duration};
 
 pub(crate) mod rcon;
+pub const API_PORT: &str = "8080";
 
 pub struct Client {
     pub address: String,

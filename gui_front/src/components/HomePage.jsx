@@ -5,6 +5,7 @@ function HomePage() {
     const [serverStatus, setServerStatus] = useState('Unknown');
     const [cpuUsage, setCpuUsage] = useState(0);
     const [ramUsage, setRamUsage] = useState(0);
+    const [apiPort, setApiPort] = useState(null);
 
     useEffect(() => {
         fetch('/api/status')
@@ -18,6 +19,13 @@ function HomePage() {
         fetch('/api/ram')
             .then(response => response.json())
             .then(data => setRamUsage(parseFloat(data.ram).toFixed(2)));
+    }, []);
+
+    useEffect(() => {
+        fetch('http://localhost:8080/api/port')
+            .then(response => response.json())
+            .then(data => setApiPort(data.port))
+            .catch(error => console.error("Error fetching port: ", error));
     }, []);
 
     return (

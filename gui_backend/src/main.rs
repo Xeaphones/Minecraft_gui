@@ -6,6 +6,7 @@ use serde_json;
 use docker_compose::DockerCompose;
 use server::start_server;
 use client::CLIENT;
+use client::API_PORT;
 
 
 #[actix_web::main]
@@ -56,8 +57,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut client = CLIENT.lock().unwrap();
         client.set_container_address(docker_compose.get_container_ip("mc".to_string())?);
     }
-
-    let bind_addr = "127.0.0.1:8080";
+    
+    let bind_addr = format!("127.0.0.1:{}", API_PORT);
     let server = start_server(&bind_addr);
 
     println!();
