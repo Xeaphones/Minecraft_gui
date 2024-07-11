@@ -7,7 +7,7 @@ use docker_compose::DockerCompose;
 use server::start_server;
 use client::CLIENT;
 
-use sysinfo::{System, SystemExt, ProcessorExt, ComponentExt};
+use sysinfo::{System, SystemExt, ProcessorExt};
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde_json::json;
 
