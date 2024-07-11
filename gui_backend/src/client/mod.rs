@@ -31,6 +31,10 @@ impl Client {
         }
     }
 
+    pub fn get_minecraft_port(&self) -> u16 {
+        self.minecraft_port
+    }
+    
     pub async fn attach_rcon(&mut self) -> Result<(), Box<dyn Error>> {
         let rcon_client = RconClient::new(&self.address, &self.rcon_password).await?;
         self.rcon_client = Some(rcon_client);

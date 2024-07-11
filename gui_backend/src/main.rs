@@ -5,7 +5,7 @@ mod client;
 use serde_json;
 use docker_compose::DockerCompose;
 use server::start_server;
-use client::{CLIENT, MINECRAFT_PORT};
+use client::CLIENT;
 
 
 #[actix_web::main]
