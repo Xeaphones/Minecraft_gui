@@ -1,4 +1,4 @@
-use actix_web::{web, App, HttpServer, Result};
+use actix_web::{web, Result};
 use serde::Deserialize;
 use std::error::Error;
 use crate::client::CLIENT;
