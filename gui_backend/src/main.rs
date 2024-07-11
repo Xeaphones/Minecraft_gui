@@ -11,28 +11,6 @@ use sysinfo::{System, SystemExt, ProcessorExt, ComponentExt};
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde_json::json;
 
-async fn get_server_status() -> impl Responder {
-    HttpResponse::Ok().json(json!({ "status": "Server is running" }))
-}
-
-async fn get_cpu_usage() -> impl Responder {
-    let mut sys = System::new_all();
-    sys.refresh_all();
-
-    let cpu_usage = sys.global_processor_info().cpu_usage();
-    HttpResponse::Ok().json(json!({ "cpu": cpu_usage }))
-}
-
-async fn get_ram_usage() -> impl Responder {
-    let mut sys = System::new_all();
-    sys.refresh_all();
-
-    let total_memory = sys.total_memory();
-    let used_memory = sys.used_memory();
-
-    HttpResponse::Ok().json(json!({ "total_memory": total_memory, "used_memory": used_memory }))
-}
-
 
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -78,25 +56,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     docker_compose.start()?;
 
     let bind_addr = "127.0.0.1:8081";
-
-    // Configurer le serveur Actix-web avec les routes API
-    let http_server = HttpServer::new(|| {
-        App::new()
-            .route("/api/status", web::get().to(get_server_status))
-            .route("/api/cpu", web::get().to(get_cpu_usage))
-            .route("/api/ram", web::get().to(get_ram_usage))
-    })
-    .bind(&bind_addr)?
-    .run();
-
-    // Attendre le serveur HTTP
-    tokio::spawn(http_server);
-
-    // Démarrer le serveur Minecraft
-    let mc_server = start_server(&bind_addr);
+    // Démarrer le serveur
+    let server = start_server(&bind_addr);
 
     println!();
-    match mc_server.await {
+    match server.await {
         Ok(_) => println!("Minecraft Server terminated cleanly"),
         Err(err) => println!("Minecraft Server terminated with an error!.\nErr: {:?}", err),
     }
