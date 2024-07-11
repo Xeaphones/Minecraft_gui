@@ -7,6 +7,11 @@ use docker_compose::DockerCompose;
 use server::start_server;
 use client::CLIENT;
 
+use sysinfo::{System, SystemExt, ProcessorExt};
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use serde_json::json;
+
+
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let path = "docker-compose.yml";
@@ -56,13 +61,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         client.set_container_address(docker_compose.get_container_ip("mc".to_string())?);
     }
 
-    let bind_addr = "127.0.0.1:8080";
+    let bind_addr = "127.0.0.1:8081";
     let server = start_server(&bind_addr);
 
     println!();
     match server.await {
-        Ok(_) => println!("Server terminated cleanly"),
-        Err(err) => println!("Server terminated with an error!.\nErr: {:?}", err),
+        Ok(_) => println!("Minecraft Server terminated cleanly"),
+        Err(err) => println!("Minecraft Server terminated with an error!.\nErr: {:?}", err),
     }
 
     // Getting basic stats
