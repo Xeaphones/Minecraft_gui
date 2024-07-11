@@ -20,6 +20,12 @@ function HomePage() {
             .then(data => setRamUsage(parseFloat(data.ram).toFixed(2)));
     }, []);
 
+    useEffect(() => {
+        fetchData();
+        const interval = setInterval(fetchData, 4000);
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <Container maxWidth="lg">
             <Grid container spacing={3} style={{ marginTop: '20px' }}>
