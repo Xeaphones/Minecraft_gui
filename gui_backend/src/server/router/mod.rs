@@ -1,8 +1,10 @@
 mod rcon;
+mod query;
 
 use actix_web::{web, HttpResponse, Responder};
 
 use rcon::rcon;
+use query::query;
 
 async fn hello() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
@@ -23,5 +25,6 @@ pub fn route(cfg: &mut web::ServiceConfig) {
             .route(web::post().to(echo))
     )
     .service(web::resource("/hey").route(web::get().to(manual_hello)))
-    .configure(rcon);
+    .configure(rcon)
+    .configure(query);
 }

@@ -14,7 +14,6 @@ pub struct Client {
     container_ip: String,
 }
 
-
 pub enum StatResponse {
     Basic(BasicStatResponse),
     Full(FullStatResponse),
@@ -45,6 +44,11 @@ impl Client {
     }
 
     pub async fn get_stats(&self, stat: String) -> Result<StatResponse, Box<dyn Error>> {
+        match self.container_ip.as_str() {
+            "empty" => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Container IP not set"))),
+            _ => {},
+        }
+
         match stat.as_str() {
             "full" => self.get_full_stats().await.map(|stats| StatResponse::Full(stats)),
             _ => self.get_basic_stats().await.map(|stats| StatResponse::Basic(stats)),
