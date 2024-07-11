@@ -7,6 +7,7 @@ use sysinfo::{System, SystemExt, ProcessorExt};
 
 use rcon::rcon;
 use query::query;
+use crate::client::CLIENT;
 
 async fn get_minecraft_port() -> impl Responder {
     HttpResponse::Ok().json(json!({ "port": crate::client::get_minecraft_port() }))
