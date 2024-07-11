@@ -13,7 +13,7 @@ function HomePage() {
 
         fetch('/api/cpu')
             .then(response => response.json())
-            .then(data => setCpuUsage(data.cpu));
+            .then(data => setCpuUsage(parseFloat(data.cpu).toFixed(2)));
 
         fetch('/api/ram')
             .then(response => response.json())
