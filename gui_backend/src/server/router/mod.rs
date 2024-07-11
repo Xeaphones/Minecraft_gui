@@ -8,6 +8,10 @@ use sysinfo::{System, SystemExt, ProcessorExt};
 use rcon::rcon;
 use query::query;
 
+async fn get_minecraft_port() -> impl Responder {
+    HttpResponse::Ok().json(json!({ "port": crate::client::get_minecraft_port() }))
+}
+
 async fn get_server_status() -> impl Responder {
     HttpResponse::Ok().json(json!({ "status": "Server is running" }))
 }
@@ -52,7 +56,8 @@ fn configure_default_routes(cfg: &mut web::ServiceConfig) {
 }
 
 fn configure_api_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::resource("/cpu").route(web::get().to(get_cpu_usage)))
+    cfg.service(web::resource("/api/minecraft-port").route(web::get().to(get_minecraft_port)))
+       .service(web::resource("/cpu").route(web::get().to(get_cpu_usage)))
        .service(web::resource("/ram").route(web::get().to(get_ram_usage)))
        .service(web::resource("/status").route(web::get().to(get_server_status)))
        .service(web::resource("/hey").route(web::get().to(manual_hello)));
