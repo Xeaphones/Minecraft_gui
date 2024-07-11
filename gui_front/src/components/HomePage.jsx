@@ -17,7 +17,7 @@ function HomePage() {
 
         fetch('/api/ram')
             .then(response => response.json())
-            .then(data => setRamUsage(data.ram));
+            .then(data => setRamUsage(data.ram)(2));
     }, []);
 
     return (
