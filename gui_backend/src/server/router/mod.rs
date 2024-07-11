@@ -22,10 +22,11 @@ async fn get_ram_usage() -> impl Responder {
     let mut sys = System::new_all();
     sys.refresh_all();
 
-    let total_memory = sys.total_memory();
-    let used_memory = sys.used_memory();
+    let total_memory = sys.total_memory() as f64;
+    let used_memory = sys.used_memory() as f64;
+    let ram_usage = (used_memory / total_memory) * 100.0;
 
-    HttpResponse::Ok().json(json!({ "total_memory": total_memory, "used_memory": used_memory }))
+    HttpResponse::Ok().json(json!({ "ram": ram_usage }))
 }
 
 async fn hello() -> impl Responder {
