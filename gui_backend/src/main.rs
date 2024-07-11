@@ -77,7 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     docker_compose.save()?;
     docker_compose.start()?;
 
-    let bind_addr = "127.0.0.1:8080";
+    let bind_addr = "127.0.0.1:8081";
 
     // Configurer le serveur Actix-web avec les routes API
     let http_server = HttpServer::new(|| {
