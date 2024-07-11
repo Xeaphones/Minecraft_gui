@@ -1,10 +1,12 @@
 mod rcon;
+mod query;
 
 use actix_web::{web, HttpResponse, Responder};
 use serde_json::json;
 use sysinfo::{System, SystemExt, ProcessorExt};
 
 use rcon::rcon;
+use query::query;
 
 async fn get_server_status() -> impl Responder {
     HttpResponse::Ok().json(json!({ "status": "Server is running" }))
@@ -52,5 +54,6 @@ pub fn route(cfg: &mut web::ServiceConfig) {
     .service(web::resource("/ram").route(web::get().to(get_ram_usage)))
     .service(web::resource("/status").route(web::get().to(get_server_status)))
     .service(web::resource("/hey").route(web::get().to(manual_hello)))
-    .configure(rcon);
+    .configure(rcon)
+    .configure(query);
 }
