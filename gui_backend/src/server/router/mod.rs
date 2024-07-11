@@ -57,8 +57,7 @@ fn configure_default_routes(cfg: &mut web::ServiceConfig) {
 }
 
 fn configure_api_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::resource("/api/port").route(web::get().to(get_port)))
-       .service(web::resource("/cpu").route(web::get().to(get_cpu_usage)))
+    cfg.service(web::resource("/cpu").route(web::get().to(get_cpu_usage)))
        .service(web::resource("/ram").route(web::get().to(get_ram_usage)))
        .service(web::resource("/status").route(web::get().to(get_server_status)))
        .service(web::resource("/hey").route(web::get().to(manual_hello)));

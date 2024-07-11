@@ -6,7 +6,8 @@ use std::error::Error;
 use tokio::time::{timeout, Duration};
 
 pub(crate) mod rcon;
-pub const API_PORT: &str = "8080";
+pub const MINECRAFT_PORT: &str = "25565";
+
 
 pub struct Client {
     pub address: String,

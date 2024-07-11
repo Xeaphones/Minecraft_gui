@@ -5,8 +5,7 @@ mod client;
 use serde_json;
 use docker_compose::DockerCompose;
 use server::start_server;
-use client::CLIENT;
-use client::API_PORT;
+use client::{CLIENT, MINECRAFT_PORT};
 
 
 #[actix_web::main]
@@ -30,7 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
     });
     docker_compose.set_service("mc", mc_service);
-    docker_compose.set_value("mc", "ports", serde_json::json!(["25565:25565","25575:25575"]))?;
+    docker_compose.set_value("mc", "ports", serde_json::json!([format!("{}:{}", MINECRAFT_PORT, MINECRAFT_PORT), "25575:25575"]))?;
     {
         let client = CLIENT.lock().unwrap();
         docker_compose.set_env("mc", "RCON_PASSWORD", &client.get_rcon_password())?;
@@ -57,8 +56,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut client = CLIENT.lock().unwrap();
         client.set_container_address(docker_compose.get_container_ip("mc".to_string())?);
     }
-    
-    let bind_addr = format!("127.0.0.1:{}", API_PORT);
+
+    let bind_addr = "127.0.0.1:8080";
     let server = start_server(&bind_addr);
 
     println!();
