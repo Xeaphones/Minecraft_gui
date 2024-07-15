@@ -13,7 +13,7 @@ async fn get_minecraft_port() -> impl Responder {
 }
 
 async fn get_server_status() -> impl Responder {
-    HttpResponse::Ok().json(json!({ "status": "Server is running" }))
+    HttpResponse::Ok().json(json!({ "status": "running" }))
 }
 
 async fn get_cpu_usage() -> impl Responder {

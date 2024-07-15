@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Grid, Paper, Typography, Button, Container } from '@mui/material';
+import Menu from './menu';
 
 function HomePage() {
     const [serverStatus, setServerStatus] = useState('Unknown');
@@ -28,6 +29,7 @@ function HomePage() {
 
     return (
         <Container maxWidth="lg">
+            {/* <Menu/> */}
             <Grid container spacing={3} style={{ marginTop: '20px' }}>
                 <Grid item xs={12} sm={4}>
                     <Paper style={{ padding: '20px', textAlign: 'center' }}>
