@@ -1,17 +1,19 @@
+use docker_compose::DockerCompose;
 use mc_query::query::{stat_basic, stat_full, BasicStatResponse, FullStatResponse};
 use rcon::RconClient;
 use lazy_static::lazy_static;
-use std::sync::Mutex;
+use std::{path::Path, sync::Mutex};
 use std::error::Error;
 use tokio::time::{timeout, Duration};
 
 pub(crate) mod rcon;
+pub(crate) mod docker_compose;
 
 pub struct Client {
     pub address: String,
     pub rcon_client: Option<RconClient>,
+    pub docker_compose: Option<DockerCompose>,
     rcon_password: String,
-    container_ip: String,
     minecraft_port: u16,
 }
 
@@ -25,8 +27,8 @@ impl Client {
         Client {
             address: address.clone(),
             rcon_client: None,
+            docker_compose: None,
             rcon_password: RconClient::generate_password(16),
-            container_ip: "empty".to_string(),
             minecraft_port,
         }
     }
@@ -41,18 +43,39 @@ impl Client {
         Ok(())
     }
 
+    pub fn attach_docker<P: AsRef<Path>>(&mut self, path: P) -> Result<(), Box<dyn Error>> {
+        let mut docker_compose = DockerCompose::new(path)?;
+
+        let mc_service = serde_json::json!({
+            "image": "itzg/minecraft-server",
+            "tty": true,
+            "stdin_open": true,
+            "volumes": ["./data:/data"],
+            "environment": serde_json::json!({
+                "EULA": "true",
+                "TYPE": "VANILLA",
+                "VERSION": "LATEST",
+                "MEMORY": "1G",
+                "LOG_TIMESTAMP": "true", 
+                "ENABLE_QUERY": "true",
+            })
+        });
+        docker_compose.set_service("mc", mc_service);
+        docker_compose.set_value("mc", "ports", serde_json::json!([format!("{}:25565", self.get_minecraft_port()), "25575:25575"]))?;
+        docker_compose.set_env("mc", "RCON_PASSWORD", &self.get_rcon_password())?;
+
+        docker_compose.save()?;
+        self.docker_compose = Some(docker_compose);
+        Ok(())
+    }
+
     pub fn get_rcon_password(&self) -> String {
         self.rcon_password.clone()
     }
 
-    pub fn set_container_address(&mut self, address: String) {
-        self.container_ip = address;
-    }
-
     pub async fn get_stats(&self, stat: String) -> Result<StatResponse, Box<dyn Error>> {
-        match self.container_ip.as_str() {
-            "empty" => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Container IP not set"))),
-            _ => {},
+        if !self.docker_compose.is_some() {
+            return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Docker Compose not set")));
         }
 
         match stat.as_str() {
@@ -63,7 +86,13 @@ impl Client {
 
     // Fonction pour obtenir les statistiques de base
     async fn get_basic_stats(&self) -> Result<BasicStatResponse, Box<dyn Error>> {
-        let result = timeout(Duration::from_secs(10), stat_basic(&self.container_ip, self.minecraft_port)).await?;
+        if !self.docker_compose.is_some() {
+            return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Docker Compose not set")));
+        }
+
+        let docker_compose = self.docker_compose.as_ref().unwrap();
+
+        let result = timeout(Duration::from_secs(3), stat_basic(&docker_compose.docker_ip, self.minecraft_port)).await?;
 
         match result {
             Ok(stats) => {
@@ -76,7 +105,13 @@ impl Client {
     
     // Fonction pour obtenir les statistiques complètes
     async fn get_full_stats(&self) -> Result<FullStatResponse, Box<dyn Error>> {
-        let result = timeout(Duration::from_secs(10), stat_full(&self.container_ip, self.minecraft_port)).await?;
+        if !self.docker_compose.is_some() {
+            return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Docker Compose not set")));
+        }
+
+        let docker_compose = self.docker_compose.as_ref().unwrap();
+        
+        let result = timeout(Duration::from_secs(3), stat_full(&docker_compose.docker_ip, self.minecraft_port)).await?;
 
         match result {
             Ok(stats) => {

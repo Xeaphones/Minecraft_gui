@@ -30,13 +30,21 @@ const Menu = () => {
         }
     }
 
-    useEffect(() => {
-        fetch('/api/status')
+    const fetchData = () => {
+        fetch('/api/stats')
             .then(response => response.json())
-            .then(data => setServerStatus(data.status));
-    }, []);
+            .catch(() => setServerStatus('Unknown'))
+            .then(data => {
+                console.log(data);
+                setServerStatus(data.status);
+            });
+    };
 
-    console.log('Server Status:', serverStatus);
+    useEffect(() => {
+        fetchData();
+        const interval = setInterval(fetchData, 4000);
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <div className={['menu', menuOpen ? 'open' : 'closed'].join(' ')}>

@@ -8,17 +8,18 @@ function HomePage() {
     const [ramUsage, setRamUsage] = useState(0);
 
     const fetchData = () => {
-        fetch('/api/status')
+        fetch('/api/stats')
             .then(response => response.json())
-            .then(data => setServerStatus(data.status));
-
-        fetch('/api/cpu')
-            .then(response => response.json())
-            .then(data => setCpuUsage(parseFloat(data.cpu).toFixed(2)));
-
-        fetch('/api/ram')
-            .then(response => response.json())
-            .then(data => setRamUsage(parseFloat(data.ram).toFixed(2)));
+            .catch(() => {
+                setServerStatus('unknown');
+                setCpuUsage(0);
+                setRamUsage(0);
+            })
+            .then(data => {
+                setServerStatus(data.status);
+                setCpuUsage(parseFloat((data.cpu.total_usage/data.cpu.system_cpu_usage) * data.cpu.online_cpus * 100).toFixed(2));
+                setRamUsage(parseFloat((data.memory.usage/data.memory.limit) * 100).toFixed(2));
+            });
     };
 
     useEffect(() => {

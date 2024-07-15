@@ -4,12 +4,40 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::error::Error;
+use hyper::Client;
+use hyperlocal::{UnixClientExt, Uri as LocalUri};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DockerCompose {
     content: serde_yaml::Value,
     path: PathBuf,
     use_docker_compose: bool,
+    docker_id: String,
+    pub docker_ip: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct CpuUsage {
+    pub total_usage: u64,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MemoryStats {
+    pub usage: u64,
+    pub limit: u64,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Stats {
+    pub cpu_stats: CpuStats,
+    pub memory_stats: MemoryStats,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct CpuStats {
+    pub cpu_usage: CpuUsage,
+    pub system_cpu_usage: u64,
+    pub online_cpus: u64,
 }
 
 impl DockerCompose {
@@ -22,6 +50,8 @@ impl DockerCompose {
             content: docker_compose,
             path: path.as_ref().to_path_buf(),
             use_docker_compose: false,
+            docker_id: "null".to_string(),
+            docker_ip: "null".to_string(),
         })
     }
 
@@ -139,8 +169,7 @@ impl DockerCompose {
             }
         }
 
-    // Method to get the container ip address
-    pub fn get_container_ip(&self, service: String) -> Result<String, Box<dyn Error>> {
+    pub fn get_container_id(&mut self, service: String) -> Result<(), Box<dyn Error>> {
         let command_output = if self.use_docker_compose {
             Command::new("docker")
                 .arg("compose")
@@ -161,11 +190,18 @@ impl DockerCompose {
             return Err("Failed to find container ID".into());
         }
 
+        self.docker_id = container_id.to_string();
+
+        Ok(())
+    }
+
+    // Method to get the container ip address
+    pub fn get_container_ip(&mut self) -> Result<(), Box<dyn Error>> {
         let inspect_output = Command::new("docker")
         .arg("inspect")
         .arg("--format")
         .arg("{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}")
-        .arg(container_id)
+        .arg(self.docker_id.clone())
         .output()?;
 
         let container_ip = std::str::from_utf8(&inspect_output.stdout)?.trim();
@@ -173,7 +209,10 @@ impl DockerCompose {
         if container_ip.is_empty() {
             return Err("Failed to find container IP address".into());
         }
-        Ok(container_ip.to_string())
+
+        self.docker_ip = container_ip.to_string();
+
+        Ok(())
     }
 
     // Method to save the current Docker Compose configuration back to a file
@@ -237,5 +276,18 @@ impl DockerCompose {
         } else {
             Err("Failed to stop docker-compose services".into())
         }
+    }
+
+    pub async fn get_container_stats(&self) -> Result<Stats, Box<dyn Error>> {
+        let url = format!("/containers/{}/stats?stream=false", self.docker_id);
+        let url: LocalUri = LocalUri::new("/var/run/docker.sock", &url);
+        
+        let client = Client::unix();
+        let res = client.get(url.into()).await?;
+        
+        let body = hyper::body::to_bytes(res.into_body()).await?;
+        let stats: Stats = serde_json::from_slice(&body)?;
+
+        Ok(stats)
     }
 }
