@@ -28,10 +28,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "ENABLE_QUERY": "true",
         })
     });
+
     docker_compose.set_service("mc", mc_service);
-    docker_compose.set_value("mc", "ports", serde_json::json!(["25565:25565","25575:25575"]))?;
     {
         let client = CLIENT.lock().unwrap();
+        let minecraft_port = client.get_minecraft_port();
+        docker_compose.set_value("mc", "ports", serde_json::json!([format!("{}:25565", minecraft_port), "25575:25575"]))?;
         docker_compose.set_env("mc", "RCON_PASSWORD", &client.get_rcon_password())?;
     }
 

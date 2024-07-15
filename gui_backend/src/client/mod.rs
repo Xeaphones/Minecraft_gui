@@ -12,6 +12,7 @@ pub struct Client {
     pub rcon_client: Option<RconClient>,
     rcon_password: String,
     container_ip: String,
+    minecraft_port: u16,
 }
 
 pub enum StatResponse {
@@ -20,15 +21,20 @@ pub enum StatResponse {
 }
 
 impl Client {
-    pub fn new(address: String) -> Self {
+    pub fn new(address: String, minecraft_port: u16) -> Self {
         Client {
             address: address.clone(),
             rcon_client: None,
             rcon_password: RconClient::generate_password(16),
             container_ip: "empty".to_string(),
+            minecraft_port,
         }
     }
 
+    pub fn get_minecraft_port(&self) -> u16 {
+        self.minecraft_port
+    }
+    
     pub async fn attach_rcon(&mut self) -> Result<(), Box<dyn Error>> {
         let rcon_client = RconClient::new(&self.address, &self.rcon_password).await?;
         self.rcon_client = Some(rcon_client);
@@ -57,7 +63,7 @@ impl Client {
 
     // Fonction pour obtenir les statistiques de base
     async fn get_basic_stats(&self) -> Result<BasicStatResponse, Box<dyn Error>> {
-        let result = timeout(Duration::from_secs(10), stat_basic(&self.container_ip, 25565)).await?;
+        let result = timeout(Duration::from_secs(10), stat_basic(&self.container_ip, self.minecraft_port)).await?;
 
         match result {
             Ok(stats) => {
@@ -66,10 +72,11 @@ impl Client {
             Err(_) => Err(Box::new(std::io::Error::new(std::io::ErrorKind::TimedOut, "Operation timed out"))),
         }
     }
+
     
     // Fonction pour obtenir les statistiques complètes
     async fn get_full_stats(&self) -> Result<FullStatResponse, Box<dyn Error>> {
-        let result = timeout(Duration::from_secs(10), stat_full(&self.container_ip, 25565)).await?;
+        let result = timeout(Duration::from_secs(10), stat_full(&self.container_ip, self.minecraft_port)).await?;
 
         match result {
             Ok(stats) => {
@@ -81,6 +88,5 @@ impl Client {
 }
 
 lazy_static! {
-    pub static ref CLIENT: Mutex<Client> = Mutex::new(Client::new("localhost".to_string())
-    );
+    pub static ref CLIENT: Mutex<Client> = Mutex::new(Client::new("localhost".to_string(), 25565));
 }

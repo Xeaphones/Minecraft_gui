@@ -8,6 +8,10 @@ use sysinfo::{System, SystemExt, ProcessorExt};
 use rcon::rcon;
 use query::query;
 
+async fn get_minecraft_port() -> impl Responder {
+    HttpResponse::Ok().json(json!({ "port": crate::client::CLIENT.lock().unwrap().get_minecraft_port() }))
+}
+
 async fn get_server_status() -> impl Responder {
     HttpResponse::Ok().json(json!({ "status": "Server is running" }))
 }
@@ -43,17 +47,25 @@ async fn manual_hello() -> impl Responder {
     HttpResponse::Ok().body("Hey there!")
 }
 
-pub fn route(cfg: &mut web::ServiceConfig) {
+fn configure_default_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/")
             .route(web::get().to(hello))
             .route(web::post().to(echo))
-            .route(web::post().to(get_cpu_usage))
-    )
-    .service(web::resource("/cpu").route(web::get().to(get_cpu_usage)))
-    .service(web::resource("/ram").route(web::get().to(get_ram_usage)))
-    .service(web::resource("/status").route(web::get().to(get_server_status)))
-    .service(web::resource("/hey").route(web::get().to(manual_hello)))
-    .configure(rcon)
-    .configure(query);
+    );
+}
+
+fn configure_api_routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(web::resource("/api/minecraft-port").route(web::get().to(get_minecraft_port)))
+       .service(web::resource("/cpu").route(web::get().to(get_cpu_usage)))
+       .service(web::resource("/ram").route(web::get().to(get_ram_usage)))
+       .service(web::resource("/status").route(web::get().to(get_server_status)))
+       .service(web::resource("/hey").route(web::get().to(manual_hello)));
+}
+
+pub fn route(cfg: &mut web::ServiceConfig) {
+    configure_default_routes(cfg);
+    configure_api_routes(cfg);
+    cfg.configure(rcon);
+    cfg.configure(query);
 }
