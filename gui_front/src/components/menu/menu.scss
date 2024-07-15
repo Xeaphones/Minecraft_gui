@@ -1,0 +1,96 @@
+@import '../../app.scss';
+
+.menu {
+    background-color: $background-secondary;
+    padding-inline: 0.5em;
+    padding-block: 2em;
+    will-change: width;
+    transition: width 0.5s;
+    width: 80px;
+    &.open {
+        width: 300px;
+        .menu-div {
+            justify-content: end;
+        }
+    }
+    .icon {
+        color: $primary;
+    }
+    .menu-div {
+        display: flex;
+        justify-content: center;
+        align-content: center;
+        transition: justify-content 0.5s;
+    }
+    .server-status {
+        position: relative;
+        margin-block: 3em;
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        .status-icon {
+            width: 60px;
+            height: 60px;
+            z-index: 100;
+            background-color: $red;
+            border-radius: 100%;
+        }
+        p {
+            color: #fff;
+            font-size: larger;
+            letter-spacing: 0.8px;
+            font-size: 0.9em;
+            span.ok {
+                color: $green;
+            }
+            span.error {
+                color: $red;
+            }
+        }
+        &.running {
+            .status-icon {
+                background-color: $green;
+            }
+        
+        }
+    }
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        gap: 1.2em;
+        li {
+            a {
+                display: flex;
+                align-items: center;
+                svg {
+                    text-decoration: none;
+                    color: #000;
+                    // font-size: 2em;
+                    display: block;
+                    padding: 0.5em;
+                    border-radius: 100%;
+                }
+            }
+            p {
+                font-size: larger;
+                letter-spacing: 0.8px;
+                color: #fff;
+                margin-left: 1em;
+            }
+            &.current {
+                // make a circle
+                svg {
+                    background-color: $primary;
+                    color: #fff;
+                }
+                .icon {
+                    color: $foreground-secondary;
+                }
+            }
+        }
+    }
+}

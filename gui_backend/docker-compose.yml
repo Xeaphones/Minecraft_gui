@@ -1,12 +1,13 @@
 services:
   mc:
     environment:
+      ENABLE_QUERY: 'true'
       EULA: 'true'
       LOG_TIMESTAMP: 'true'
       MEMORY: 1G
       TYPE: VANILLA
       VERSION: LATEST
-      RCON_PASSWORD: HAkIT@q#yzWWUGPk
+      RCON_PASSWORD: KDNttOfzdZPyrNaS
     image: itzg/minecraft-server
     stdin_open: true
     tty: true
