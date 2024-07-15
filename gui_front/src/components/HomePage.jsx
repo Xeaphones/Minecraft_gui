@@ -6,7 +6,7 @@ function HomePage() {
     const [cpuUsage, setCpuUsage] = useState(0);
     const [ramUsage, setRamUsage] = useState(0);
 
-    useEffect(() => {
+    const fetchData = () => {
         fetch('/api/status')
             .then(response => response.json())
             .then(data => setServerStatus(data.status));
@@ -18,6 +18,12 @@ function HomePage() {
         fetch('/api/ram')
             .then(response => response.json())
             .then(data => setRamUsage(parseFloat(data.ram).toFixed(2)));
+    };
+
+    useEffect(() => {
+        fetchData();
+        const interval = setInterval(fetchData, 4000);
+        return () => clearInterval(interval);
     }, []);
 
     return (
