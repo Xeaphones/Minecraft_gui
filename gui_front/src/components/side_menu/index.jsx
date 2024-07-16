@@ -7,12 +7,12 @@ import {
 } from '@mui/icons-material';
 import './menu.scss';
 import ContentSwitcher from './ContentSwitcher';
+import { useData } from '../mcProvider';
 
 const SideMenu = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
-  const [players, setPlayers] = useState([]);
-  const [playerCount, setPlayerCount] = useState(0);
+  const { players, numPlayers } = useData();
 
   const handleMenuClick = (menu) => {
     setMenuOpen(true);
@@ -33,18 +33,6 @@ const SideMenu = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (activeMenu === 'players') {
-      fetch('/api/query/full')
-        .then((response) => response.json())
-        .then((data) => {
-          setPlayers(data.players);
-          setPlayerCount(data.num_players);
-        })
-        .catch((error) => console.error('Error fetching player data:', error));
-    }
-  }, [activeMenu]);
-
   return (
     <div className={`side-menu ${menuOpen ? 'open' : 'closed'}`}>
       <div className="menu-icons">
@@ -58,7 +46,7 @@ const SideMenu = () => {
           <PowerIcon className='icon' />
         </IconButton>
       </div>
-      {menuOpen && <ContentSwitcher activeMenu={activeMenu} players={players} playerCount={playerCount} />}
+      {menuOpen && <ContentSwitcher activeMenu={activeMenu} players={players} playerCount={numPlayers} />}
     </div>
   );
 };

@@ -7,6 +7,8 @@ export const DataProvider = ({ children }) => {
     const [cpuUsage, setCpuUsage] = useState(0);
     const [ramUsage, setRamUsage] = useState(0);
     const [logs, setLogs] = useState([]);
+    const [numPlayers, setNumPlayers] = useState(0);
+    const [players, setPlayers] = useState([]);
     const [error, setError] = useState(null);
 
     const fetchData = () => {
@@ -24,6 +26,19 @@ export const DataProvider = ({ children }) => {
             });
     };
 
+    const fetchPlayers = () => {
+        fetch('/api/query/full')
+            .then(response => response.json())
+            .then(data => {
+                setNumPlayers(data.num_players);
+                setPlayers(data.players);
+            })
+            .catch(error => {
+                console.error('Error fetching player data:', error);
+                setError('Error fetching player data');
+            });
+    };
+
     useEffect(() => {
         fetchData();
         const interval = setInterval(fetchData, 4000);
@@ -35,6 +50,15 @@ export const DataProvider = ({ children }) => {
 
     useEffect(() => {
         const eventSource = new EventSource('/api/logs');
+        let interval;
+
+        if (serverStatus === 'running') {
+            interval = setInterval(fetchPlayers, 1000);
+        } else {
+            setNumPlayers(0);
+            setPlayers([]);
+            clearInterval(interval);
+        }
 
         eventSource.onmessage = (event) => {
             setLogs((prevLogs) => [...prevLogs, event.data]);
@@ -43,6 +67,7 @@ export const DataProvider = ({ children }) => {
         eventSource.onerror = (error) => {
             console.error('EventSource error:', error);
             eventSource.close();
+            clearInterval(interval);
         };
 
         return () => {
@@ -51,7 +76,7 @@ export const DataProvider = ({ children }) => {
     }, [serverStatus]);
 
     return (
-        <DataContext.Provider value={{ serverStatus, cpuUsage, ramUsage, logs, error }}>
+        <DataContext.Provider value={{ serverStatus, cpuUsage, ramUsage, logs, numPlayers, players, error }}>
             {children}
         </DataContext.Provider>
     );
