@@ -8,7 +8,7 @@ const ContentSwitcher = ({ activeMenu, players, playerCount }) => {
           <div>
             <p>Nombre de joueurs : {playerCount}</p>
             <div>Liste des joueurs:
-              <ul>{players.map((player, index) => <li key={index}>{player}</li>)}</ul>
+              <ul>{players.map((player, index) => <li style={{display: "flex", alignItems: "center", gap: "10px"}} key={index}><img src={"https://mc-heads.net/avatar/" + player + "/32"}></img>{player}</li>)}</ul>
             </div>
           </div>
         );

@@ -5,6 +5,7 @@ import Menu from './components/menu';
 import SideMenu from './components/side_menu';
 import ServerProperties from './components/ServerProperties';
 import './app.scss';
+import { DataProvider } from './components/mcProvider';
 
 function App() {
     return (

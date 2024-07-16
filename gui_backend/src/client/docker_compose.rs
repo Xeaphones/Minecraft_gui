@@ -127,7 +127,7 @@ impl DockerCompose {
     }
 
         // Method to set an environment variable in a specific service
-        pub fn set_env(&mut self, service_name: &str, key: &str, value: &str) -> Result<(), Box<dyn Error>> {
+        pub fn set_env(&mut self, service_name: &str, key: &str, value: String) -> Result<(), Box<dyn Error>> {
             let yaml_value = Value::String(value.to_string());
             if let Some(service) = self.content.get_mut("services")
                 .and_then(Value::as_mapping_mut)

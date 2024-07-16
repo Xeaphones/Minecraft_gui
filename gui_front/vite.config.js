@@ -13,6 +13,11 @@ export default defineConfig({
       '/ws': {
         target: 'http://localhost:8080',
         ws: true,
+      },
+      '/getHead': {
+        target: 'https://mc-heads.net/avatar/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/getHead/, ''),
       }
     },
   },

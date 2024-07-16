@@ -15,6 +15,9 @@ export const DataProvider = ({ children }) => {
     const ws = useRef(null);
 
     useEffect(() => {
+        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+            return;
+        }
         ws.current = new WebSocket('ws://localhost:8080/ws/');
 
         ws.current.onopen = () => {
@@ -31,8 +34,16 @@ export const DataProvider = ({ children }) => {
             setError('WebSocket error');
         };
 
-        ws.current.onclose = () => {
-            console.log('WebSocket connection closed');
+        ws.current.onpong = () => {
+            console.log('Received pong');
+        };
+
+        ws.current.onclose = (event) => {
+            if (event.wasClean) {
+                console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+            } else {
+                console.log(`[close] Connection died code=${event.code}, reason=${event.reason}`);
+            }
         };
 
         const handleWebSocketMessage = (message) => {
@@ -56,6 +67,7 @@ export const DataProvider = ({ children }) => {
                     setRamUsage(parseFloat((message.content.memory.usage / message.content.memory.limit) * 100).toFixed(2));
                     break;
                 case 'server_stats':
+                    console.log('server_stats:', message.content);
                     setNumPlayers(message.content.num_players);
                     setPlayers(message.content.players);
                     setMaxPlayers(message.content.max_players);
@@ -72,7 +84,10 @@ export const DataProvider = ({ children }) => {
         };
 
         return () => {
-            ws.current.close();
+            if (ws.current) {
+                ws.current.close();
+                ws.current = null;
+            }
         };
     }, []);
 
@@ -102,6 +117,19 @@ export const DataProvider = ({ children }) => {
         }
     }
 
+    const sendProperties = (properties) => {
+        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+            const message = JSON.stringify({ 
+                status: "sending",
+                content: properties,
+                content_type: "properties",
+             });
+            ws.current.send(message);
+        } else {
+            console.error('WebSocket is not open');
+        }
+    };
+
     return (
         <DataContext.Provider value={
             { 
@@ -110,7 +138,7 @@ export const DataProvider = ({ children }) => {
                 logs, 
                 numPlayers, maxPlayers, players, 
                 error, 
-                sendCommand, serverToggle 
+                sendCommand, serverToggle, sendProperties
             }}>
             {children}
         </DataContext.Provider>

@@ -1,13 +1,40 @@
 services:
   mc:
     environment:
+      CREATE_CONSOLE_IN_PIPE: 'true'
       ENABLE_QUERY: 'true'
+      ENABLE_RCON: 'false'
       EULA: 'true'
       LOG_TIMESTAMP: 'true'
       MEMORY: 1G
       TYPE: VANILLA
       VERSION: LATEST
-      RCON_PASSWORD: KDNttOfzdZPyrNaS
+      RCON_PASSWORD: xmJhTAyqCqbqzaIK
+      ALLOW_FLIGHT: 'false'
+      ALLOW_NETHER: 'true'
+      BROADCAST_CONSOLE_TO_OPS: 'true'
+      BROADCAST_RCON_TO_OPS: 'true'
+      DIFFICULTY: easy
+      ENABLE_COMMAND_BLOCK: 'false'
+      FORCE_GAMEMODE: 'false'
+      GAMEMODE: survival
+      HARDCORE: 'false'
+      HIDE_ONLINE_PLAYERS: 'false'
+      MAX_PLAYERS: '20'
+      MOTD: A Minecraft Server
+      ONLINE_MODE: 'true'
+      OP_PERMISSION_LEVEL: '4'
+      PLAYER_IDLE_TIMEOUT: '0'
+      PVP: 'true'
+      RESOURCE_PACK: ''
+      RESOURCE_PACK_PROMPT: ''
+      SIMULATION_DISTANCE: '10'
+      SPAWN_ANIMALS: 'true'
+      SPAWN_MONSTERS: 'true'
+      SPAWN_NPCS: 'true'
+      SPAWN_PROTECTION: '16'
+      VIEW_DISTANCE: '10'
+      WHITE_LIST: 'false'
     image: itzg/minecraft-server
     stdin_open: true
     tty: true

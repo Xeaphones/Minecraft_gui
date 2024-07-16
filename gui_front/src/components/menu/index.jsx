@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import { 
     Menu as MenuIcon,
     MenuOpen as MenuOpenIcon,
@@ -9,9 +10,9 @@ import './menu.scss';
 import { useData } from '../mcProvider';
 
 const Menu = () => {
-    const [currentPath, setCurrentPath] = useState('/');
-    const { serverStatus } = useData();
+    const { serverStatus, numPlayers, maxPlayers } = useData();
     const [menuOpen, setMenuOpen] = useState(false);
+    const currentPath = useLocation();
 
     const MenuItem = [
         {'name': 'Server', 'icon': ServerIcon, 'path': '/'},
@@ -43,19 +44,24 @@ const Menu = () => {
                     : <MenuIcon onClick={() => setMenuOpen(true)} className='icon' fontSize='large'/>}
             </div>
             <div className={'server-status ' + serverStatus}>
-                <div className='status-icon'></div>
+                <div style={{display: "flex", gap: "10px"}}>
+                    <div className='status-icon'></div>
+                    {
+                        menuOpen && <p>{getServerStatus(serverStatus)}</p>
+                    }
+                </div>
                 {
-                    menuOpen && <p>{getServerStatus(serverStatus)}</p>
+                    serverStatus === 'running' && <p>{numPlayers}/{maxPlayers}</p>
                 }
             </div>
             <ul>
                 {
                     MenuItem.map((item, index) => (
-                        <li key={index} className={currentPath === item.path ? 'current' : null}>
-                            <a href={item.path}>
+                        <li key={index} className={currentPath.pathname === item.path ? 'current' : null}>
+                            <Link to={item.path}>
                                 <item.icon className='icon' fontSize='large'/>
                                 {menuOpen && <p>{item.name}</p>}
-                            </a>
+                            </Link>
                         </li>
                     ))
                 }

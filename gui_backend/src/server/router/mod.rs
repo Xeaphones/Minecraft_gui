@@ -3,6 +3,7 @@ use actix_web::{web, App, HttpRequest, HttpServer, Responder};
 use actix_web_actors::ws;
 use futures_util::StreamExt;
 use hyper::{client, server};
+use serde::de::value;
 use std::error::Error;
 use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
@@ -11,7 +12,7 @@ use tokio;
 use tokio::sync::{oneshot, watch};
 use tokio::task;
 
-use crate::client::{StatResponse, CLIENT};
+use crate::client::{docker_compose, StatResponse, CLIENT};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct MyMessage {
@@ -135,7 +136,13 @@ impl MyWebSocket {
                                     status: "ok".to_string(),
                                     content: json!(_log.trim()),
                                 };
-                                addr.send(log_message).await.unwrap();
+                                match addr.send(log_message).await {
+                                    Ok(_) => {},
+                                    Err(err) => {
+                                        println!("Failed to send log message: {:?}", err);
+                                        break;
+                                    }
+                                };
                             }
                             Err(err) => {
                                 println!("Error streaming logs: {:?}", err);
@@ -148,8 +155,6 @@ impl MyWebSocket {
                     println!("Failed to stream logs: {:?}", err);
                 }
             }
-
-            addr.send(LogStreamEnded).await.unwrap();
         });
     }
 
@@ -159,7 +164,8 @@ impl MyWebSocket {
     }
 
     fn send_full_stats(&self, ctx: &mut ws::WebsocketContext<Self>) {
-        let addr = ctx.address();
+        ctx.run_interval(Duration::new(3, 0), |_, ctx| {
+            let addr = ctx.address();
 
             let server_status = {
                 let client = CLIENT.lock().unwrap();
@@ -199,6 +205,7 @@ impl MyWebSocket {
                     }
                 }
             });
+        });
     }
 }
 
@@ -384,6 +391,29 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MyWebSocket {
                                 addr.send(status_message).await.unwrap();
                             });
                         }
+                    } else if message.content_type == "restart_logs" {
+                        self.restart_log_stream(ctx);
+                    } else if message.content_type == "properties" {
+                        let addr = ctx.address();
+                        actix::spawn(async move {
+                            let mut docker_compose = {
+                                let client = CLIENT.lock().unwrap();
+                                client.docker_compose.as_ref().unwrap().clone()
+                            };
+
+                            let properties = message.content.as_object().unwrap();
+
+                            // for (key, value) in properties {}
+
+                            for (key, value) in properties.iter() {
+                                let value = value.clone().to_string().replace("\"", "");
+
+                                let _ = docker_compose.set_env("mc", key.replace("-", "_").to_uppercase().as_str(), value);
+                            
+                            }
+                            
+                            let _ = docker_compose.save();
+                        });
                     }
 
                 } else {
@@ -416,21 +446,6 @@ impl Handler<MyMessage> for MyWebSocket {
             "content_type": msg.content_type,
         });
         ctx.text(json_message.to_string());
-    }
-}
-
-struct LogStreamEnded;
-
-impl Message for LogStreamEnded {
-    type Result = ();
-}
-
-impl Handler<LogStreamEnded> for MyWebSocket {
-    type Result = ();
-
-    fn handle(&mut self, _: LogStreamEnded, ctx: &mut Self::Context) {
-        self.log_streaming = false;
-        self.stream_logs(ctx); // Restart the log stream
     }
 }
 

@@ -3,7 +3,9 @@
 .side-menu {
     top: 0;
     right: 0;
-    height: 100vh; /* Ajout de la hauteur */
+    // height: 100vh; /* Ajout de la hauteur */
+    padding-inline: 0.5em;
+    padding-block: 2em;
     background-color: $background-secondary;
     display: flex;
     transition: width 0.3s ease;

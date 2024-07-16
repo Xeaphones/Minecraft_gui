@@ -66,7 +66,7 @@ impl Client {
         });
         docker_compose.set_service("mc", mc_service);
         docker_compose.set_value("mc", "ports", serde_json::json!([format!("{}:25565", self.get_minecraft_port()), "25575:25575"]))?;
-        docker_compose.set_env("mc", "RCON_PASSWORD", &self.get_rcon_password())?;
+        docker_compose.set_env("mc", "RCON_PASSWORD", self.get_rcon_password())?;
 
         docker_compose.save()?;
         self.docker_compose = Some(docker_compose);
