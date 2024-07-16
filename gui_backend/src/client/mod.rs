@@ -15,6 +15,7 @@ pub struct Client {
     pub docker_compose: Option<DockerCompose>,
     rcon_password: String,
     minecraft_port: u16,
+    pub server_status: String,
 }
 
 pub enum StatResponse {
@@ -30,6 +31,7 @@ impl Client {
             docker_compose: None,
             rcon_password: RconClient::generate_password(16),
             minecraft_port,
+            server_status: "stopped".to_string(),
         }
     }
 
@@ -58,6 +60,8 @@ impl Client {
                 "MEMORY": "1G",
                 "LOG_TIMESTAMP": "true", 
                 "ENABLE_QUERY": "true",
+                "ENABLE_RCON": "false",
+                "CREATE_CONSOLE_IN_PIPE": "true",
             })
         });
         docker_compose.set_service("mc", mc_service);
