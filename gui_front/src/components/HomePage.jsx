@@ -4,7 +4,7 @@ import { useData } from './mcProvider';
 import './homePage.scss';
 
 function HomePage() {
-    const { serverStatus, cpuUsage, ramUsage, logs } = useData();
+    const { serverStatus, cpuUsage, ramUsage, logs, sendCommand, serverToggle } = useData();
     const [command, setCommand] = useState('');
 
     const writelog = (logs) => {
@@ -17,23 +17,16 @@ function HomePage() {
         setCommand(event.target.value);
     };
 
+    const handleServerStart = async () => {
+        serverToggle();
+    }
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
             let _command = command.trim();
             setCommand('');
-            const response = await fetch('/api/command', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ command: _command }),
-            });
-            if (response.ok) {
-                console.log('Command sent successfully');
-            } else {
-                console.error('Failed to send command');
-            }
+            sendCommand(_command);
         } catch (error) {
             console.error('Error:', error);
         }
@@ -47,7 +40,9 @@ function HomePage() {
                     <Paper style={{ padding: '20px', textAlign: 'center' }}>
                         <Typography variant="h6">Server status + On/off</Typography>
                         <Typography variant="h4">{serverStatus}</Typography>
-                        <Button variant="contained" color="primary" style={{ marginTop: '20px' }}>Toggle</Button>
+                        <Button variant="contained" color="primary" style={{ marginTop: '20px' }} onClick={() => handleServerStart()}>
+                            {serverStatus !== 'stopped' ? 'Stop' : 'Start'}
+                        </Button>
                     </Paper>
                 </Grid>
                 <Grid item xs={12} sm={4}>

@@ -12,6 +12,8 @@ use hyperlocal::{UnixClientExt, Uri as LocalUri};
 use hyper::body::HttpBody;
 use actix_web::web::Bytes;
 
+use super::CLIENT;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DockerCompose {
     content: serde_yaml::Value,
@@ -304,6 +306,8 @@ impl DockerCompose {
         let res = client.get(url.into()).await?;
 
         if !res.status().is_success() {
+            let mut mc = CLIENT.lock().unwrap();
+            mc.server_status = "stopped".to_string();
             return Err("Failed to get container logs".into());
         }
 

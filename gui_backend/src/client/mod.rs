@@ -73,6 +73,15 @@ impl Client {
         Ok(())
     }
 
+    pub fn detach_docker(&mut self) -> Result<(), Box<dyn Error>> {
+        if self.docker_compose.is_none() {
+            return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Docker Compose not set")));
+        }
+
+        self.docker_compose = None;
+        Ok(())
+    }
+
     pub fn get_rcon_password(&self) -> String {
         self.rcon_password.clone()
     }
