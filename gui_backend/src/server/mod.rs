@@ -1,6 +1,6 @@
 mod router;
 
-use actix_web::{App, HttpServer};
+use actix_web::{middleware::DefaultHeaders, App, HttpServer};
 use std::io;
 
 use router::route;
