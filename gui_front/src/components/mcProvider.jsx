@@ -20,6 +20,7 @@ export const DataProvider = ({ children }) => {
                 setRamUsage(0);
             })
             .then(data => {
+                console.log(data);
                 setServerStatus(data.status);
                 setCpuUsage(parseFloat((data.cpu.total_usage/data.cpu.system_cpu_usage) * data.cpu.online_cpus * 100).toFixed(2));
                 setRamUsage(parseFloat((data.memory.usage/data.memory.limit) * 100).toFixed(2));
@@ -30,6 +31,7 @@ export const DataProvider = ({ children }) => {
         fetch('/api/query/full')
             .then(response => response.json())
             .then(data => {
+                console.log(data);
                 setNumPlayers(data.num_players);
                 setPlayers(data.players);
             })
@@ -53,7 +55,7 @@ export const DataProvider = ({ children }) => {
         let interval;
 
         if (serverStatus === 'running') {
-            interval = setInterval(fetchPlayers, 1000);
+            interval = setInterval(fetchPlayers, 4000);
         } else {
             setNumPlayers(0);
             setPlayers([]);

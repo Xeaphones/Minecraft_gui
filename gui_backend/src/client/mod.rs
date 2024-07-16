@@ -94,6 +94,10 @@ impl Client {
             return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Docker Compose not set")));
         }
 
+        if self.server_status != "running" {
+            return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Server not running")));
+        }
+
         let docker_compose = self.docker_compose.as_ref().unwrap();
 
         let result = timeout(Duration::from_secs(3), stat_basic(&docker_compose.docker_ip, self.minecraft_port)).await?;
@@ -111,6 +115,10 @@ impl Client {
     async fn get_full_stats(&self) -> Result<FullStatResponse, Box<dyn Error>> {
         if !self.docker_compose.is_some() {
             return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Docker Compose not set")));
+        }
+
+        if self.server_status != "running" {
+            return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Server not running")));
         }
 
         let docker_compose = self.docker_compose.as_ref().unwrap();

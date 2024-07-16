@@ -1,8 +1,9 @@
-use actix_web::{web, Result};
+use actix_web::{web, Result, HttpResponse, Responder};
 use std::error::Error;
+use serde_json::json;
 use crate::client::{StatResponse, CLIENT};
 
-async fn full() -> Result<String, Box<dyn Error>> {
+async fn full() -> impl Responder {
     let client = CLIENT.lock().unwrap();
 
     match client.get_stats("full".to_string()).await {
@@ -23,20 +24,20 @@ async fn full() -> Result<String, Box<dyn Error>> {
                         "players": stats.players,
                     });
         
-                    Ok(json.to_string())
+                    HttpResponse::Ok().json(json)
                 },
                 _ => {
-                    Err(Box::new(std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid data")))
+                    HttpResponse::Ok().json(json!({"error": "Invalid data"}))
                 }
             }
         },
         Err(err) => {
-            Err(err)
+            HttpResponse::Ok().json(json!({"error": format!("{:?}", err)}))
         }
     }
 }
 
-async fn basic() -> Result<String, Box<dyn Error>> {
+async fn basic() -> impl Responder {
     let client = CLIENT.lock().unwrap();
 
     match client.get_stats("basic".to_string()).await {
@@ -53,15 +54,15 @@ async fn basic() -> Result<String, Box<dyn Error>> {
                         "host_ip": stats.host_ip,
                     });
         
-                    Ok(json.to_string())
+                    HttpResponse::Ok().json(json)
                 },
                 _ => {
-                    Err(Box::new(std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid data")))
+                    HttpResponse::InternalServerError().json(json!({"error": "Invalid data"}))
                 }
             }
         },
         Err(err) => {
-            Err(err)
+            HttpResponse::InternalServerError().json(json!({"error": format!("{:?}", err)}))
         }
     }
 }
