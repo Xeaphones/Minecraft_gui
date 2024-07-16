@@ -3,11 +3,12 @@
 .side-menu {
     top: 0;
     right: 0;
-    height: 100vh;
+    height: 100vh; /* Ajout de la hauteur */
     background-color: $background-secondary;
     display: flex;
     transition: width 0.3s ease;
     z-index: 1000;
+    position: relative; /* Modification du positionnement */
 
     &.closed {
         width: 80px;

@@ -8,30 +8,51 @@ $error: #f44336;
 $success: #66bb6a;
 $unknown: #808080;
 
+.App {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    position: relative; /* Assurez-vous que les menus se positionnent par rapport à .App */
+}
+
+.main-content {
+    flex-grow: 1;
+    margin-left: 80px; /* Ajuste cette valeur en fonction de la largeur de ton menu gauche fermé */
+    margin-right: 80px; /* Ajuste cette valeur en fonction de la largeur de ton menu droit fermé */
+    transition: margin 0.3s ease;
+
+    .menu.open + & {
+        margin-left: 300px; /* Ajuste cette valeur en fonction de la largeur de ton menu gauche ouvert */
+    }
+
+    .side-menu.open + & {
+        margin-right: 300px; /* Ajuste cette valeur en fonction de la largeur de ton menu droit ouvert */
+    }
+}
+
 html, body {
-  margin: 0;
-  height: 100vh;
-  width: 100vw;
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
 }
 
 body {
-  background-color: $background-primary;
-  #root {
-    max-width: 1280px;
-    text-align: center;
-    .App {
-      display: flex;
-      height: 100vh;
-      width: 100vw;
+    background-color: $background-primary;
+    #root {
+        max-width: 1280px;
+        text-align: center;
+        .App {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
     }
-  }
-} 
-  
+}
+
 .card {
-  padding: 2em;
+    padding: 2em;
 }
 
 .read-the-docs {
-  color: #888;
+    color: #888;
 }
-  
