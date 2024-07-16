@@ -1,0 +1,59 @@
+.server-properties {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #2c2f33;
+    color: #fff;
+    border-radius: 8px;
+    overflow: scroll;
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+
+        .property {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            label {
+                flex: 1;
+                text-transform: capitalize;
+            }
+
+            input[type="text"],
+            input[type="number"] {
+                flex: 2;
+                padding: 5px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+                background: #40444b;
+                color: #fff;
+            }
+
+            input[type="checkbox"] {
+                margin-left: 10px;
+            }
+        }
+
+        button {
+            padding: 10px 15px;
+            background: #7289da;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            align-self: center;
+
+            &:hover {
+                background: #5b6eae;
+            }
+        }
+    }
+}

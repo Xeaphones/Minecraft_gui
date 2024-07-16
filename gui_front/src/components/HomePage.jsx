@@ -33,7 +33,7 @@ function HomePage() {
     };
 
     return (
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" style={{ overflow: 'scroll' }}>
             {/* <Menu/> */}
             <Grid container spacing={3} style={{ marginTop: '20px' }}>
                 <Grid item xs={12} sm={4}>
