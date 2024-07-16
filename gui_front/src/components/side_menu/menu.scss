@@ -1,0 +1,56 @@
+@import '../../app.scss';
+
+.side-menu {
+    top: 0;
+    right: 0;
+    height: 100vh;
+    background-color: $background-secondary;
+    display: flex;
+    transition: width 0.3s ease;
+    z-index: 1000;
+
+    &.closed {
+        width: 80px;
+        ~ .main-content {
+            margin-right: 80px;
+        }
+    }
+
+    &.open {
+        width: 300px;
+        ~ .main-content {
+            margin-right: 300px;
+        }
+    }
+
+    .menu-icons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+        position: relative;
+        z-index: 1001;
+
+        .icon {
+            color: $primary;
+            margin: 10px 0;
+        }
+    }
+
+    .menu-content {
+        margin-top: 20px;
+        width: 100%;
+        padding: 20px;
+        color: #fff;
+        overflow-y: auto;
+
+        ul {
+            list-style: none;
+            padding: 0;
+
+            li {
+                padding: 5px 0;
+            }
+        }
+    }
+}
