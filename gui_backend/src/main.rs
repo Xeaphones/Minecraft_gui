@@ -9,18 +9,6 @@ use client::CLIENT;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let path = "docker-compose.yml";
 
-    // Getting a value from the nginx service
-    // if let Some(value) = docker_compose.get_value("mc", "environment") {
-    //     println!("Env: {:#?}", value);
-    // }
-
-    // Getting a service
-    // if let Some(service) = docker_compose.get_service("mc") {
-    //     println!("Service found: {:#?}", service);
-    // } else {
-    //     println!("Service not found");
-    // }
-
     {
         let mut client = CLIENT.lock().unwrap();
 
@@ -53,17 +41,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         if let Some(docker_compose) = client.docker_compose.take() {
-
-            match docker_compose.get_container_stats().await {
-                Ok(stats) => {
-                    println!("CPU Usage: {:?}", stats.cpu_stats.cpu_usage.total_usage);
-                    println!("Memory Usage: {:?}", stats.memory_stats.usage);
-                }
-                Err(e) => {
-                    eprintln!("Error getting container stats: {}", e);
-                }
-            }
-
             docker_compose.stop()?;
         }
     }

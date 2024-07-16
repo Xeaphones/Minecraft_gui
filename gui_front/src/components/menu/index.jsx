@@ -6,10 +6,11 @@ import {
     Settings as SettingsIcon,
 } from '@mui/icons-material';
 import './menu.scss';
+import { useData } from '../mcProvider';
 
 const Menu = () => {
     const [currentPath, setCurrentPath] = useState('/');
-    const [serverStatus, setServerStatus] = useState('Unknown');
+    const { serverStatus } = useData();
     const [menuOpen, setMenuOpen] = useState(false);
 
     const MenuItem = [
@@ -21,30 +22,18 @@ const Menu = () => {
 
     const getServerStatus = (status) => {
         switch(status) {
+            case 'starting':
+                return <>Server status: <br/><span className='warning'>starting</span></>;
             case 'running':
                 return <>Server status: <br/><span className='ok'>running</span></>;
+            case 'stopping':
+                return <>Server status: <br/><span className='warning'>stopping</span></>;
             case 'stopped':
                 return <>Server status: <br/><span className='error'>stopped</span></>;
             default:
-                return <>Server status: <br/><span className='error'>unknown</span></>;
+                return <>Server status: <br/><span className='unknown'>unknown</span></>;
         }
     }
-
-    const fetchData = () => {
-        fetch('/api/stats')
-            .then(response => response.json())
-            .catch(() => setServerStatus('Unknown'))
-            .then(data => {
-                console.log(data);
-                setServerStatus(data.status);
-            });
-    };
-
-    useEffect(() => {
-        fetchData();
-        const interval = setInterval(fetchData, 4000);
-        return () => clearInterval(interval);
-    }, []);
 
     return (
         <div className={['menu', menuOpen ? 'open' : 'closed'].join(' ')}>

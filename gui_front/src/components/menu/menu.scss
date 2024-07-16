@@ -32,7 +32,7 @@
             width: 60px;
             height: 60px;
             z-index: 100;
-            background-color: $red;
+            background-color: $unknown;
             border-radius: 100%;
         }
         p {
@@ -41,17 +41,32 @@
             letter-spacing: 0.8px;
             font-size: 0.9em;
             span.ok {
-                color: $green;
+                color: $success;
             }
             span.error {
-                color: $red;
+                color: $error;
+            }
+            span.warning {
+                color: $warning
+            }
+            span.unknown {
+                color: $unknown;
             }
         }
         &.running {
             .status-icon {
-                background-color: $green;
+                background-color: $success;
             }
-        
+        }
+        &.starting, &.stopping {
+            .status-icon {
+                background-color: $warning;
+            }
+        }
+        &.stopped {
+            .status-icon {
+                background-color: $error;
+            }
         }
     }
     ul {

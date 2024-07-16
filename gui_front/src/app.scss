@@ -1,13 +1,17 @@
 $primary: #21B46B;
 $background-primary: #303030;
 $background-secondary: #1E1E1E;
+$foreground-primary: #d1c2ef;
 $foreground-secondary: #1D192B;
-$red: #DB1010;
-$green: #27C93F;
+$warning: #ffa726;
+$error: #f44336;
+$success: #66bb6a;
+$unknown: #808080;
 
 html, body {
   margin: 0;
   height: 100vh;
+  width: 100vw;
 }
 
 body {
@@ -18,6 +22,7 @@ body {
     .App {
       display: flex;
       height: 100vh;
+      width: 100vw;
     }
   }
 } 

@@ -5,6 +5,7 @@ use crate::client::CLIENT;
 async fn get_stats() -> impl Responder {
     let client = CLIENT.lock().unwrap();
     let docker_compose = client.docker_compose.as_ref().unwrap();
+    let status = client.server_status.clone();
 
     match docker_compose.get_container_stats().await {
         Ok(stats) => {
@@ -18,7 +19,7 @@ async fn get_stats() -> impl Responder {
                 "limit": stats.memory_stats.limit,
             });
             
-            HttpResponse::Ok().json(json!({"status": "running", "cpu":  cpu_usage, "memory": memory_usage}))
+            HttpResponse::Ok().json(json!({"status": status, "cpu":  cpu_usage, "memory": memory_usage}))
         },
         Err(err) => {
             HttpResponse::Ok().json(json!({"status": "stopped", "error": format!("{:?}", err)}))

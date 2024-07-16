@@ -1,35 +1,46 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Paper, Typography, Button, Container } from '@mui/material';
-import Menu from './menu';
+import { Grid, Paper, Typography, Button, Container, Input, TextField } from '@mui/material';
+import { useData } from './mcProvider';
+import './homePage.scss';
 
 function HomePage() {
-    const [serverStatus, setServerStatus] = useState('Unknown');
-    const [cpuUsage, setCpuUsage] = useState(0);
-    const [ramUsage, setRamUsage] = useState(0);
+    const { serverStatus, cpuUsage, ramUsage, logs } = useData();
+    const [command, setCommand] = useState('');
 
-    const fetchData = () => {
-        fetch('/api/stats')
-            .then(response => response.json())
-            .catch(() => {
-                setServerStatus('unknown');
-                setCpuUsage(0);
-                setRamUsage(0);
-            })
-            .then(data => {
-                setServerStatus(data.status);
-                setCpuUsage(parseFloat((data.cpu.total_usage/data.cpu.system_cpu_usage) * data.cpu.online_cpus * 100).toFixed(2));
-                setRamUsage(parseFloat((data.memory.usage/data.memory.limit) * 100).toFixed(2));
-            });
+    const writelog = (logs) => {
+        return logs.map((log, index) => <p style={{"margin": "unset"}} key={index}>{
+            log
+        }</p>);
+    }
+
+    const handleInputChange = (event) => {
+        setCommand(event.target.value);
     };
 
-    useEffect(() => {
-        fetchData();
-        const interval = setInterval(fetchData, 4000);
-        return () => clearInterval(interval);
-    }, []);
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            let _command = command.trim();
+            setCommand('');
+            const response = await fetch('/api/command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ command: _command }),
+            });
+            if (response.ok) {
+                console.log('Command sent successfully');
+            } else {
+                console.error('Failed to send command');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
 
     return (
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
             {/* <Menu/> */}
             <Grid container spacing={3} style={{ marginTop: '20px' }}>
                 <Grid item xs={12} sm={4}>
@@ -51,9 +62,24 @@ function HomePage() {
                         <Typography variant="h4">{ramUsage}%</Typography>
                     </Paper>
                 </Grid>
-                <Grid item xs={12}>
-                    <Paper style={{ padding: '20px', textAlign: 'center' }}>
-                        <Typography variant="h6">Console</Typography>
+                <Grid item xs={12} className='console-container'>
+                    <Paper className='console'>
+                        <Typography variant="h6" style={{ display: 'flex', flexDirection: 'column', alignItems: 'start'}}>
+                            {
+                                logs.length > 0 ? writelog(logs) : 'No logs yet'
+                            }
+                        </Typography>
+                    </Paper>
+                    <Paper className='console-input'>
+                        <form onSubmit={handleSubmit}>
+                                <TextField 
+                                    fullWidth 
+                                    placeholder="Enter command" 
+                                    value={command}
+                                    onChange={handleInputChange}
+                                />
+                                <Button type="submit" variant="contained">Send</Button>
+                        </form>
                     </Paper>
                 </Grid>
             </Grid>

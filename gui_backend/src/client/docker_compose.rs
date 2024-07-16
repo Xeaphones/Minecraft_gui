@@ -1,13 +1,18 @@
+use async_stream::stream;
+use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use serde_yaml::{from_reader, to_writer, Value, Mapping};
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::error::Error;
+use std::sync::{Arc, Mutex};
 use hyper::Client;
 use hyperlocal::{UnixClientExt, Uri as LocalUri};
+use hyper::body::HttpBody;
+use actix_web::web::Bytes;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DockerCompose {
     content: serde_yaml::Value,
     path: PathBuf,
@@ -289,5 +294,43 @@ impl DockerCompose {
         let stats: Stats = serde_json::from_slice(&body)?;
 
         Ok(stats)
+    }
+
+    pub async fn stream_container_logs(&self) -> Result<impl Stream<Item = Result<Bytes, Box<dyn Error>>> + Unpin, Box<dyn Error>> {
+        let url = format!("/containers/{}/logs?stdout=true&stderr=true&follow=true", self.docker_id);
+        let url: LocalUri = LocalUri::new("/var/run/docker.sock", &url);
+
+        let client = Client::unix();
+        let res = client.get(url.into()).await?;
+
+        if !res.status().is_success() {
+            return Err("Failed to get container logs".into());
+        }
+
+        let body = Arc::new(Mutex::new(res.into_body()));
+
+        let log_stream = stream! {
+            let body = Arc::clone(&body);
+            while let Some(chunk) = body.lock().unwrap().data().await {
+                yield chunk.map_err(|e| Box::new(e) as Box<dyn Error>);
+            }
+        };
+
+        Ok(Box::pin(log_stream))
+    }
+
+    pub async fn send_command(&self, command: String) -> Result<(), Box<dyn Error>> {
+        let status = Command::new("docker")
+            .arg("exec")
+            .arg(self.docker_id.clone())
+            .arg("mc-send-to-console")
+            .arg(command)
+            .status()?;
+
+        if status.success() {
+            Ok(())
+        } else {
+            Err("Failed to send command to container".into())
+        }
     }
 }
